@@ -48,7 +48,8 @@ allprojects {
                 password = pwd
                 isAllowInsecureProtocol = true
             }
-            url = uri("http://172.16.11.231:8081/nexus/repository/maven2-group/")
+            url = uri("http://nexus.suyang.home/repository/maven-group/")
+//            url = uri("http://172.16.11.231:8081/nexus/repository/maven2-group/")
         }
     }
 
