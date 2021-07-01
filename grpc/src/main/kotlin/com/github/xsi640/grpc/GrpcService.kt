@@ -7,6 +7,7 @@ import io.grpc.stub.ServerCalls
 import io.grpc.stub.ServerCalls.asyncUnaryCall
 import io.grpc.stub.StreamObserver
 import java.io.InputStream
+import java.lang.Thread.sleep
 
 data class GrpcService(
     val clazz: Class<*>,
@@ -21,6 +22,7 @@ fun main() {
     builder.addService(buildServiceDefinition())
     val server = builder.build()
     server.start()
+    sleep(10000000)
 }
 
 fun buildServiceDefinition(): ServerServiceDefinition {
@@ -28,7 +30,7 @@ fun buildServiceDefinition(): ServerServiceDefinition {
     val md = MethodDescriptor
         .newBuilder<List<Any?>, List<Any?>>()
         .setType(MethodDescriptor.MethodType.UNARY)
-        .setFullMethodName("sayHello")
+        .setFullMethodName("demo/sayHello")
         .setRequestMarshaller(object : MethodDescriptor.Marshaller<List<Any?>> {
             override fun stream(value: List<Any?>?): InputStream {
                 TODO("Not yet implemented")
