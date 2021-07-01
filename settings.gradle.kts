@@ -6,3 +6,4 @@ fun defineSubProject(name: String, path: String) {
 }
 
 defineSubProject("${rootProject.name}-app", "app")
+defineSubProject("${rootProject.name}-grpc", "grpc")
