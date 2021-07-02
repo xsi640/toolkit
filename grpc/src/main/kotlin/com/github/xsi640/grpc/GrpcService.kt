@@ -22,8 +22,10 @@ fun main() {
     builder.addService(buildServiceDefinition())
     val server = builder.build()
     server.start()
-    sleep(10000000)
+    sleep(100000000)
 }
+
+val marshallerSerializer = JsonMarshallerSerializer()
 
 fun buildServiceDefinition(): ServerServiceDefinition {
     val builder = ServerServiceDefinition.builder("demo")
@@ -31,27 +33,12 @@ fun buildServiceDefinition(): ServerServiceDefinition {
         .newBuilder<List<Any?>, List<Any?>>()
         .setType(MethodDescriptor.MethodType.UNARY)
         .setFullMethodName("demo/sayHello")
-        .setRequestMarshaller(object : MethodDescriptor.Marshaller<List<Any?>> {
-            override fun stream(value: List<Any?>?): InputStream {
-                TODO("Not yet implemented")
-            }
-
-            override fun parse(stream: InputStream?): List<Any?> {
-                TODO("Not yet implemented")
-            }
-        })
-        .setResponseMarshaller(object : MethodDescriptor.Marshaller<List<Any?>> {
-            override fun stream(value: List<Any?>?): InputStream {
-                TODO("Not yet implemented")
-            }
-
-            override fun parse(stream: InputStream?): List<Any?> {
-                TODO("Not yet implemented")
-            }
-        }).build()
-    builder.addMethod(md, asyncUnaryCall(object : ServerCalls.UnaryMethod<List<Any?>, List<Any?>> {
-        override fun invoke(request: List<Any?>?, responseObserver: StreamObserver<List<Any?>>?) {
-        }
-    }))
+        .setRequestMarshaller(marshallerSerializer)
+        .setResponseMarshaller(marshallerSerializer).build()
+    builder.addMethod(md, asyncUnaryCall { request, responseObserver ->
+        println("invoke")
+        responseObserver.onNext(listOf("ok"))
+        responseObserver.onCompleted()
+    })
     return builder.build()
 }

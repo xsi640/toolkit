@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
+    id("java")
     kotlin("jvm") version "1.5.0"
 }
 
@@ -8,6 +9,7 @@ allprojects {
 
     apply {
         plugin("idea")
+        plugin("java")
         plugin("kotlin")
     }
 
@@ -33,6 +35,8 @@ allprojects {
         implementation("org.apache.commons:commons-lang3:${vers["commons_lang"]}")
         implementation("org.apache.httpcomponents:httpclient:${vers["apache_httpclient"]}")
 
+        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.3")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.3")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     }
