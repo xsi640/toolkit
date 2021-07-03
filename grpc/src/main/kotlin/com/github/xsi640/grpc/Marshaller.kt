@@ -6,10 +6,21 @@ import io.grpc.MethodDescriptor
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 
-interface MarshallerSerializer : MethodDescriptor.Marshaller<List<Any?>> {
 
+interface MarshallerSerializerFactory {
+    fun create(): MarshallerSerializer
 }
 
+interface MarshallerSerializer : MethodDescriptor.Marshaller<List<Any?>>
+
+class MarshallerSerializerFactoryImpl : MarshallerSerializerFactory {
+
+    private val defaultMarshallerSerializer = JsonMarshallerSerializer()
+
+    override fun create(): MarshallerSerializer {
+        return defaultMarshallerSerializer
+    }
+}
 
 class JsonMarshallerSerializer : MarshallerSerializer {
 
