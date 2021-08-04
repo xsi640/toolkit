@@ -39,6 +39,8 @@ allprojects {
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.3")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.5.0")
     }
 
     val user = System.getProperty("repoUser")
@@ -52,8 +54,8 @@ allprojects {
                 password = pwd
                 isAllowInsecureProtocol = true
             }
-            url = uri("http://nexus.suyang.home/repository/maven-group/")
-//            url = uri("http://172.16.11.231:8081/nexus/repository/maven2-group/")
+//            url = uri("http://nexus.suyang.home/repository/maven-group/")
+            url = uri("http://172.16.11.231:8081/nexus/repository/maven2-group/")
         }
     }
 

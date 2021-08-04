@@ -9,16 +9,12 @@ import io.grpc.stub.StreamObserver
 import java.io.InputStream
 import java.lang.Thread.sleep
 
-
-
 fun main() {
     val builder = ServerBuilder.forPort(8080)
     builder.maxInboundMessageSize(4096)
-//    builder.intercept()
     builder.addService(buildServiceDefinition())
     val server = builder.build()
     server.start()
-    sleep(100000000)
 }
 
 val marshallerSerializer = JsonMarshallerSerializer()

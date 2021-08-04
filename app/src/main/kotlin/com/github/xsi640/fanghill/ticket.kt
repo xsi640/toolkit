@@ -1,9 +1,12 @@
 package com.github.xsi640.fanghill
 
+import javafx.application.Application.launch
+import kotlinx.coroutines.*
 import org.apache.http.client.methods.HttpPost
 import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import org.jsoup.Jsoup
+import java.lang.Thread.sleep
 import java.net.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -13,17 +16,22 @@ const val CATEGORY_ID = "763149d1-4390-4200-8b32-1f6ac71d3666"
 const val LIST_URL = "http://www.fscac.org/Activity/List"
 const val ORDER_URL = "http://www.fscac.org/Content/order"
 const val DETAIL_URL = "http://www.fscac.org/Activity/detail"
-const val COOKIE =
-    "__RequestVerificationToken=93qWa0mnf8SFSZwItd_sNAreAQgzrGW7znbZ_6TrDtJ6nLBiH0L4AfyFeGAaUMKSGKUWwctUquTY5sF_l_x86w2; .xCookie=DCAD8C0AF759D62DF2F91BDAD0A954B75DD9876C40012B0E03790B2656C6749256C5A4A55B2F31705EA03C8F2049D2D90E1D177F5E1E004F6441D12D69D586F517E3DAA78625AAEA4965348C16DB220494EA912691DF39136B932CC65725BFA4AB11906E06EE576F108EE8AFC98CE1D8; ASP.NET_SessionId=0ydpxo00bubvyrtvzlv1aqn4"
+val COOKIES =
+    listOf(
+        "__RequestVerificationToken=e9b6yhuwBnogAu0oQvHCKvu0utxBELh1iJYGgSyzMDsTEOwGC5amUYJg__kv442Up56z_Ix9SWCiXQ7Uw_k6dg2; .xCookie=80A3CCB0C2694AE6D21BAA0EEC7A3507DA15E7AB8001E1451A57D131DDCF2BCD36F8F8530A14F16F2D75E1F6D51BDD33E18BB35296C600D6E904A183F0E35C3EEF59A4614DE9300FD16F280EB5C515BE4FE8B2BDC64C9F61701FDF4E197DE058F27BCB52651E2194F8E76F9C2E901848",
+        "__RequestVerificationToken=2mwMZemxja31qzwqTL2KhAPRdC4FJCTuRB29utVU9lL0fVSLF1ffV02fldsNX4hnBExBtSofHmZEkXXdHAl7LA2; ASP.NET_SessionId=yg02bl0joh4qxkvorufpkdle; .xCookie=9ECE6D12811CE096F252F6EA0D54F4702B56F6D23A412A88D7AC21E339B071DA071AE461EF09C2F867ED71EF011FB061E4C33C9B28841AEC5C9A143FC45F97DB2C40A2387AD8D12AB70C2A14F68089EC8E418AB2C057DC8D93B025EA319B60C67DB8E89CFCDFB8887C73C9F931FA775B"
+    )
 
 fun main(args: Array<String>) {
-    val keyword = "小魔仙"
+    val keyword = "八仙"
     var item: Item? = null
     while (item == null) {
         val exists = getCategories().firstOrNull { it.title.contains(keyword) }
         if (exists != null) {
             item = exists
         }
+        println("not found keyword:$keyword retry...")
+        sleep(500)
     }
     println("found $keyword's ticket.")
     val url = "$ORDER_URL?module=Activity&&" +
@@ -33,15 +41,25 @@ fun main(args: Array<String>) {
             "OrderBeginTime=${item.beginTime.toString("yyyy/M/d HH:mm:ss").replace(" ", "%20")}&&" +
             "OrderUrl=${DETAIL_URL}?id=${item.id}"
 
-    var result = submitOrder(url).trim()
-    while (result == "0" || result == "-9") {
-        result = submitOrder(url).trim()
+    val jobs = mutableListOf<Job>()
+    COOKIES.forEach { cookie ->
+        jobs.add(GlobalScope.launch {
+            var result = submitOrder(url, cookie)
+            while (result == "0" || result == "-9") {
+                result = submitOrder(url, cookie)
+                delay(1)
+            }
+            if (result == "-1") {
+                println("please check cookie.")
+            } else if (result == "-2") {
+                println("submit failured. already expired.")
+            }
+        })
     }
-    if (result == "-1") {
-        println("please check cookie.")
-    } else if (result == "-2") {
-        println("submit failured. already expired.")
+
+    while (jobs.any { it.isActive }) {
     }
+    println("ok")
 }
 
 fun getCategories(): List<Item> {
@@ -66,13 +84,13 @@ fun getCategories(): List<Item> {
     return result
 }
 
-fun submitOrder(url: String): String {
+fun submitOrder(url: String, cookie: String): String {
     val httpClient = HttpClients.createDefault()
     val method = HttpPost(url)
     method.addHeader("Content-Type", "application/json; charset=utf-8")
     method.addHeader(
         "Cookie",
-        COOKIE
+        cookie
     )
     val response = httpClient.execute(method)
     return if (response.statusLine.statusCode == 200) {
