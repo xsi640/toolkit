@@ -2,7 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java")
-    kotlin("jvm") version "1.5.0"
+    kotlin("jvm") version "1.8.22"
 }
 
 allprojects {
@@ -20,11 +20,11 @@ allprojects {
 
 
     val vers = mapOf(
-        "commons_io" to "2.8.0",
-        "commons_codec" to "1.15",
+        "commons_io" to "2.13.0",
+        "commons_codec" to "1.16.0",
         "commons_lang" to "3.12.0",
-        "apache_httpclient" to "4.5.13",
-        "jackson" to "2.11.3"
+        "jackson" to "2.13.5",
+        "okhttp" to "4.10.0"
     )
 
     rootProject.extra.set("vers", vers)
@@ -33,30 +33,20 @@ allprojects {
         implementation("commons-io:commons-io:${vers["commons_io"]}")
         implementation("commons-codec:commons-codec:${vers["commons_codec"]}")
         implementation("org.apache.commons:commons-lang3:${vers["commons_lang"]}")
-        implementation("org.apache.httpcomponents:httpclient:${vers["apache_httpclient"]}")
+        implementation("com.squareup.okhttp3:okhttp:${vers["okhttp"]}")
+        implementation("com.squareup.okhttp3:logging-interceptor:${vers["okhttp"]}")
 
-        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.3")
-        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.12.3")
+        implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:1.31")
+        implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${vers["jackson"]}")
         implementation("org.jetbrains.kotlin:kotlin-reflect")
         implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
         implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:1.5.0")
     }
 
-    val user = System.getProperty("repoUser")
-    val pwd = System.getProperty("repoPassword")
-
     repositories {
         mavenLocal()
-        maven {
-            credentials {
-                username = user
-                password = pwd
-                isAllowInsecureProtocol = true
-            }
-//            url = uri("http://nexus.suyang.home/repository/maven-group/")
-            url = uri("http://172.16.11.231:8081/nexus/repository/maven2-group/")
-        }
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
     }
 
     tasks.withType<Test> {

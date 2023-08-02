@@ -1,119 +1,136 @@
 package com.github.xsi640.fanghill
 
-import javafx.application.Application.launch
-import kotlinx.coroutines.*
-import org.apache.http.client.methods.HttpPost
-import org.apache.http.impl.client.HttpClients
-import org.apache.http.util.EntityUtils
-import org.jsoup.Jsoup
-import java.lang.Thread.sleep
-import java.net.*
-import java.text.SimpleDateFormat
-import java.util.*
+import com.fasterxml.jackson.databind.ObjectMapper
+import okhttp3.HttpUrl
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.logging.HttpLoggingInterceptor
+import java.net.URI
+import java.security.MessageDigest
+import java.security.SecureRandom
+import java.security.cert.X509Certificate
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.SSLContext
+import javax.net.ssl.SSLSocketFactory
+import javax.net.ssl.TrustManager
+import javax.net.ssl.X509TrustManager
 
+const val Mid = 38892
+const val OrderWay = 0
 
-const val CATEGORY_ID = "763149d1-4390-4200-8b32-1f6ac71d3666"
-const val LIST_URL = "http://www.fscac.org/Activity/List"
-const val ORDER_URL = "http://www.fscac.org/Content/order"
-const val DETAIL_URL = "http://www.fscac.org/Activity/detail"
-val COOKIES =
-    listOf(
-        "__RequestVerificationToken=e9b6yhuwBnogAu0oQvHCKvu0utxBELh1iJYGgSyzMDsTEOwGC5amUYJg__kv442Up56z_Ix9SWCiXQ7Uw_k6dg2; .xCookie=80A3CCB0C2694AE6D21BAA0EEC7A3507DA15E7AB8001E1451A57D131DDCF2BCD36F8F8530A14F16F2D75E1F6D51BDD33E18BB35296C600D6E904A183F0E35C3EEF59A4614DE9300FD16F280EB5C515BE4FE8B2BDC64C9F61701FDF4E197DE058F27BCB52651E2194F8E76F9C2E901848",
-        "__RequestVerificationToken=2mwMZemxja31qzwqTL2KhAPRdC4FJCTuRB29utVU9lL0fVSLF1ffV02fldsNX4hnBExBtSofHmZEkXXdHAl7LA2; ASP.NET_SessionId=yg02bl0joh4qxkvorufpkdle; .xCookie=9ECE6D12811CE096F252F6EA0D54F4702B56F6D23A412A88D7AC21E339B071DA071AE461EF09C2F867ED71EF011FB061E4C33C9B28841AEC5C9A143FC45F97DB2C40A2387AD8D12AB70C2A14F68089EC8E418AB2C057DC8D93B025EA319B60C67DB8E89CFCDFB8887C73C9F931FA775B"
-    )
+const val token =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNjkxMjYyODUzIiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuiLj-aJrCIsIlVzZXJJZCI6IjM0MDQ3IiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI0LzgvMSAxOjA0OjEzIiwibmJmIjoxNjkwOTM4MjUzLCJleHAiOjE3MjI0NzQyNTMsImlhdCI6MTY5MDkzODI1MywiaXNzIjoiaG9uZ3hpbiIsImF1ZCI6Imhvbmd4aW4ifQ.tQzxkVJkbVJ3GD95XSqDQO9RESIlcnVd_UAiWlP9uyY"
+const val url = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder?"
+const val userAgent =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 
 fun main(args: Array<String>) {
-    val keyword = "八仙"
-    var item: Item? = null
-    while (item == null) {
-        val exists = getCategories().firstOrNull { it.title.contains(keyword) }
-        if (exists != null) {
-            item = exists
+    while (true) {
+        if (run()) {
+            break
         }
-        println("not found keyword:$keyword retry...")
-        sleep(500)
     }
-    println("found $keyword's ticket.")
-    val url = "$ORDER_URL?module=Activity&&" +
-            "CategoryID=$CATEGORY_ID&&" +
-            "id=${item.id}&&OrderTitle=${URLEncoder.encode(URLEncoder.encode(item.title, "UTF-8"), "UTF-8")}&&" +
-            "OrderImage=${item.image}&&" +
-            "OrderBeginTime=${item.beginTime.toString("yyyy/M/d HH:mm:ss").replace(" ", "%20")}&&" +
-            "OrderUrl=${DETAIL_URL}?id=${item.id}"
+}
 
-    val jobs = mutableListOf<Job>()
-    COOKIES.forEach { cookie ->
-        jobs.add(GlobalScope.launch {
-            var result = submitOrder(url, cookie)
-            while (result == "0" || result == "-9") {
-                result = submitOrder(url, cookie)
-                delay(1)
+fun run(): Boolean {
+    val mapper = ObjectMapper()
+    val timestamp = System.currentTimeMillis()
+    val data = mutableMapOf<String, Any>()
+    data["Mid"] = Mid
+    data["OrderWay"] = OrderWay
+    val newData = mutableMapOf<String, Any>()
+    newData["Mid"] = Mid
+    newData["OrderWay"] = OrderWay
+    newData["token"] = token
+    newData["timestamps"] = timestamp
+
+    val builder = OkHttpClient().newBuilder()
+        .followRedirects(true)
+        .connectTimeout(3000, TimeUnit.MILLISECONDS)
+        .readTimeout(3000, TimeUnit.MILLISECONDS)
+        .sslSocketFactory(sslSocketFactory(), object : X509TrustManager {
+            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
             }
-            if (result == "-1") {
-                println("please check cookie.")
-            } else if (result == "-2") {
-                println("submit failured. already expired.")
+
+            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+            }
+
+            override fun getAcceptedIssuers(): Array<X509Certificate> {
+                return emptyArray()
             }
         })
-    }
+        .hostnameVerifier { _, _ -> true }
 
-    while (jobs.any { it.isActive }) {
+    val log = HttpLoggingInterceptor()
+    log.level = HttpLoggingInterceptor.Level.BODY
+    builder.addInterceptor(log)
+    val client = builder.build()
+    val requestBuilder = Request.Builder()
+    requestBuilder.header("Content-Type", "application/json")
+    requestBuilder.header("Sign", createRequestSign(newData))
+    requestBuilder.header("Timestamps", timestamp.toString())
+    requestBuilder.header("User-Agent", userAgent)
+    requestBuilder.header("Authorization", "Bearer $token")
+    val uri = URI(url)
+    val urlBuilder = HttpUrl.Builder()
+        .scheme(uri.scheme)
+        .host(uri.host)
+    if (uri.port != -1) {
+        urlBuilder.port(uri.port)
     }
-    println("ok")
+    if (uri.path.isNotEmpty()) {
+        uri.path.split("/").forEach {
+            if (it.isNotEmpty()) {
+                urlBuilder.addPathSegment(it.trim('/'))
+            }
+        }
+    }
+    requestBuilder.url(urlBuilder.build())
+    val body = mapper.writeValueAsString(data)
+        .toRequestBody(contentType = "application/json".toMediaType())
+    val request = requestBuilder.post(body).build()
+    client.newCall(request).execute().use { resp->
+        resp.body.toString()
+    }
+    return true
 }
 
-fun getCategories(): List<Item> {
-    val result = mutableListOf<Item>()
-    val doc = Jsoup.connect("$LIST_URL?CategoryID=$CATEGORY_ID&Page=1").get()
-    val elements = doc.select("div.result ul.list li")
-    elements.forEach { element ->
-        val id = element.select("a")[0].attr("href").replace("detail?id=", "")
-        val title = element.select(".title a").text()
-        val image = element.select(".thumbnail").attr("src")
-        val beginTime = element.select(".des dl dd")[2].text().toDate("yyyy-MM-dd HH:mm:ss")
-        result.add(
-            Item(
-                id = id,
-                title = title,
-                image = image,
-                beginTime = beginTime,
-                url = "$DETAIL_URL?id=$id"
-            )
-        )
+fun createRequestSign(map: Map<String, Any?>): String {
+    val keyList = map.keys.toSet().sorted()
+    var urlParams = ""
+    val sortKey = keyList.filter { key ->
+        map[key] != null && map[key].toString() != ""
     }
-    return result
-}
-
-fun submitOrder(url: String, cookie: String): String {
-    val httpClient = HttpClients.createDefault()
-    val method = HttpPost(url)
-    method.addHeader("Content-Type", "application/json; charset=utf-8")
-    method.addHeader(
-        "Cookie",
-        cookie
-    )
-    val response = httpClient.execute(method)
-    return if (response.statusLine.statusCode == 200) {
-        EntityUtils.toString(response.entity, Charsets.UTF_8)
-    } else {
-        ""
+    sortKey.forEach { key ->
+        urlParams += if (sortKey[sortKey.size - 1] != key) {
+            "${key}=${map[key]}&"
+        } else {
+            "${key}=${map[key]}"
+        }
     }
+    val md = MessageDigest.getInstance("MD5")
+    val mdBytes = md.digest(urlParams.toByteArray())
+    return mdBytes.joinToString("") { "%02x".format(it) }.lowercase()
 }
 
-data class Item(
-    val id: String,
-    val title: String,
-    val image: String,
-    val beginTime: Date,
-    val url: String
-)
-
-fun String.toDate(pattern: String): Date {
-    val sdf = SimpleDateFormat(pattern)
-    return sdf.parse(this)
+private fun sslSocketFactory(): SSLSocketFactory {
+    val sslContext = SSLContext.getInstance("SSL")
+    sslContext.init(null, trustAllCerts, SecureRandom())
+    return sslContext.socketFactory
 }
 
-fun Date.toString(pattern: String): String {
-    val sdf = SimpleDateFormat(pattern)
-    return sdf.format(this)
+val trustAllCerts: Array<TrustManager> = Array(1) {
+    object : X509TrustManager {
+        override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+        }
+
+        override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
+        }
+
+        override fun getAcceptedIssuers(): Array<X509Certificate> {
+            return emptyArray()
+        }
+    }
 }
