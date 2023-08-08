@@ -17,7 +17,7 @@ import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-const val Mid = 38892
+const val Mid = 39184
 const val OrderWay = 0
 
 const val token =
@@ -25,6 +25,8 @@ const val token =
 const val url = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder?"
 const val userAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+
+val mapper = ObjectMapper()
 
 fun main(args: Array<String>) {
     while (true) {
@@ -35,7 +37,6 @@ fun main(args: Array<String>) {
 }
 
 fun run(): Boolean {
-    val mapper = ObjectMapper()
     val timestamp = System.currentTimeMillis()
     val data = mutableMapOf<String, Any>()
     data["Mid"] = Mid
@@ -91,8 +92,12 @@ fun run(): Boolean {
     val body = mapper.writeValueAsString(data)
         .toRequestBody(contentType = "application/json".toMediaType())
     val request = requestBuilder.post(body).build()
-    client.newCall(request).execute().use { resp->
-        resp.body.toString()
+    client.newCall(request).execute().use { resp ->
+        val respBody = resp.body!!.string()
+        val r = mapper.readValue(respBody, Response::class.java)
+        if (r.result == 1) {
+            return true
+        }
     }
     return true
 }
@@ -134,3 +139,15 @@ val trustAllCerts: Array<TrustManager> = Array(1) {
         }
     }
 }
+
+class Response(
+    val result: Int = 0,
+    val msg: String = "",
+    val NumData: OrderData? = null
+)
+
+class OrderData(
+    val Rid: Int = 0,
+    val TotalNum: Int = 0,
+    val OrderNum: Int = 0
+)
