@@ -11,13 +11,15 @@ import java.net.URI
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
 import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-const val Mid = 39184
+const val Mid = 39191
 const val OrderWay = 0
 
 const val token =
@@ -25,12 +27,24 @@ const val token =
 const val url = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder?"
 const val userAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
+const val START_TIME = "2023-08-11 10:00"
 
 val mapper = ObjectMapper()
 
 fun main(args: Array<String>) {
     while (true) {
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm")
+        val c = Calendar.getInstance()
+        c.time = sdf.parse(START_TIME)
+        c.add(Calendar.MINUTE, -1)
+        if (Date().time > c.time.time) {
+            break
+        }
+        Thread.sleep(1000)
+    }
+    while (true) {
         if (run()) {
+            Thread.sleep(10)
             break
         }
     }
@@ -92,14 +106,16 @@ fun run(): Boolean {
     val body = mapper.writeValueAsString(data)
         .toRequestBody(contentType = "application/json".toMediaType())
     val request = requestBuilder.post(body).build()
+    var result = false
     client.newCall(request).execute().use { resp ->
         val respBody = resp.body!!.string()
+        println(respBody)
         val r = mapper.readValue(respBody, Response::class.java)
         if (r.result == 1) {
-            return true
+            result = true
         }
     }
-    return true
+    return result
 }
 
 fun createRequestSign(map: Map<String, Any?>): String {
