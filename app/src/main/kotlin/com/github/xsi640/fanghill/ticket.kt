@@ -1,5 +1,6 @@
 package com.github.xsi640.fanghill
 
+import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.ObjectMapper
 import okhttp3.HttpUrl
 import okhttp3.MediaType.Companion.toMediaType
@@ -19,7 +20,7 @@ import javax.net.ssl.SSLSocketFactory
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-const val Mid = 39191
+const val Mid = 39368
 const val OrderWay = 0
 
 const val token =
@@ -27,9 +28,7 @@ const val token =
 const val url = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder?"
 const val userAgent =
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-const val START_TIME = "2023-08-11 10:00"
-
-val mapper = ObjectMapper()
+const val START_TIME = "2023-09-26 10:00"
 
 fun main(args: Array<String>) {
     while (true) {
@@ -51,6 +50,9 @@ fun main(args: Array<String>) {
 }
 
 fun run(): Boolean {
+    val mapper = ObjectMapper()
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
     val timestamp = System.currentTimeMillis()
     val data = mutableMapOf<String, Any>()
     data["Mid"] = Mid
@@ -159,6 +161,7 @@ val trustAllCerts: Array<TrustManager> = Array(1) {
 class Response(
     val result: Int = 0,
     val msg: String = "",
+    val data: Int = 0,
     val NumData: OrderData? = null
 )
 
