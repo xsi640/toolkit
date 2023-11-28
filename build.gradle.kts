@@ -35,6 +35,7 @@ allprojects {
         implementation("org.apache.commons:commons-lang3:${vers["commons_lang"]}")
         implementation("com.squareup.okhttp3:okhttp:${vers["okhttp"]}")
         implementation("com.squareup.okhttp3:logging-interceptor:${vers["okhttp"]}")
+        implementation("org.apache.commons:commons-vfs2:2.9.0")
 
         implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:1.31")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${vers["jackson"]}")
