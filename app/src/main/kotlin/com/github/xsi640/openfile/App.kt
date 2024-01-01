@@ -18,5 +18,6 @@ fun main() {
         Runtime.getRuntime().exec("cmd /c \"${file.absolutePath}\"")
         println(file.absolutePath)
         scan.nextLine()
+        files.removeAt(index)
     }
 }

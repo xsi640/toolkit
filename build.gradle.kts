@@ -24,7 +24,8 @@ allprojects {
         "commons_codec" to "1.16.0",
         "commons_lang" to "3.12.0",
         "jackson" to "2.13.5",
-        "okhttp" to "4.10.0"
+        "okhttp" to "4.10.0",
+        "jcifs" to "2.1.37"
     )
 
     rootProject.extra.set("vers", vers)
@@ -35,6 +36,7 @@ allprojects {
         implementation("org.apache.commons:commons-lang3:${vers["commons_lang"]}")
         implementation("com.squareup.okhttp3:okhttp:${vers["okhttp"]}")
         implementation("com.squareup.okhttp3:logging-interceptor:${vers["okhttp"]}")
+        implementation("org.codelibs:jcifs:${vers["jcifs"]}")
 
         implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:1.31")
         implementation("com.fasterxml.jackson.module:jackson-module-kotlin:${vers["jackson"]}")
@@ -46,7 +48,8 @@ allprojects {
 
     repositories {
         mavenLocal()
-        maven { url = uri("https://maven.aliyun.com/repository/central") }
+        maven { url = uri("https://maven.aliyun.com/repository/public") }
+        mavenCentral()
     }
 
     tasks.withType<Test> {
