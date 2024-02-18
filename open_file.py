@@ -1,26 +1,28 @@
 import os
 import random
 
-DIRECTORY = ['E:\\temp\\aria2']
-EXTENDS = ['.mp4']
+FILE_EXT_NAMES = ["mp4", "mkv"]
+FILE_FOLDER = ["F:\\private", "F:\\private\\temp"]
+CHANGE = True
 
-filelist = []
+files = []
 
-for directory in DIRECTORY:
-    for root, _, files in os.walk(directory):
-        for file in files:
-            if os.path.splitext(file)[1] in EXTENDS:
-                filelist.append(os.path.join(root, file))
+for folder in FILE_FOLDER:
+    for f in [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]:
+        if f.split(".")[-1] in FILE_EXT_NAMES:
+            files.append(folder + "\\" + f)
 
-print(f'file count{len(filelist)}')
+print(f"files count: {len(files)}")
 while True:
-    index = random.randint(0, len(filelist))
-    f = filelist[index]
-    print(f)
-    os.startfile(f)
-    filelist.remove(f)
-    command = input(f"count: {len(filelist)}, 按回车继续...")
-    if command == 'q':
-        break
-    if len(filelist) == 0:
-        break
+    file = random.choice(files)
+    print(file)
+    os.startfile(file)
+    d = input("Press Enter to continue, 'd' to delete file...")
+    if d == "d":
+        files.remove(file)
+        newFile = random.choice(files)
+        print(newFile)
+        os.startfile(newFile)
+        os.remove(file)
+    if CHANGE:
+        files.remove(file)

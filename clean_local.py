@@ -3,7 +3,7 @@ import shutil
 
 DOWNLOAD_PATH = 'E:\\Downloads'
 TARGET_PATH = 'E:\\temp\\aria2'
-COPY_FILE_EXT = [".mp4"]
+COPY_FILE_EXT = [".mp4", ".mkv"]
 COPY_FILE_SIZE = 100 * 1024 * 1024
 
 for dir in os.listdir(DOWNLOAD_PATH):
