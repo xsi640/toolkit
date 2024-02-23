@@ -26,7 +26,8 @@ def sign(map: dict) -> str:
             urlParams += f"{value}={map[value]}&"
     return hashlib.md5(urlParams.encode("utf-8")).hexdigest()
 
-def post_server():
+
+def post_server() -> bool:
     timestamp = int(time.time() * 1000)
     data = {
         "Mid": MID,
@@ -45,13 +46,18 @@ def post_server():
         'User-Agent': USER_AGENT,
         'Authorization': f"Bearer {TOKEN}"
     }
-    body = json.dumps(data)
-    logging.log(logging.INFO, f"post {URL} {headers} {body}")
-    response = requests.post(URL, headers=headers, data=body).json()
-    logging.log(logging.INFO, response)
-    if response["result"] == 1 or response["result"] == 0:
-        return True
-    return False
+    try:
+        body = json.dumps(data)
+        logging.log(logging.INFO, f"post {URL} {headers} {body}")
+        response = requests.post(URL, headers=headers, data=body).json()
+        logging.log(logging.INFO, response)
+        if response["result"] == 1 or response["result"] == 0:
+            return True
+        return False
+    except Exception as e:
+        logging.log(logging.ERROR, e)
+        return False
+
 
 def run_tick():
     while True:
