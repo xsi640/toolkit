@@ -2,7 +2,11 @@ import os
 import random
 
 FILE_EXT_NAMES = ["mp4", "mkv"]
-FILE_FOLDER = ["F:\\private", "F:\\private\\temp"]
+FILE_FOLDER = [
+    # "F:\\private",
+    # "F:\\private\\其他",
+    "F:\\private\\国产"
+]
 CHANGE = True
 
 files = []

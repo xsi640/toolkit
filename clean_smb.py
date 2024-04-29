@@ -10,7 +10,7 @@ SMB_PASSWORD = os.environ.get("SMB_ARIA2_PASSWORD")
 SMB_PATH = "aria2"
 SAVE_DIRECTORY = "f:\\private\\"
 SAVE_FILE_SIZE = 100 * 1024 * 1024
-SAVE_FILE_EXTNAME = ".mp4"
+SAVE_FILE_EXTNAME = [".mp4", ".mkv"]
 
 logging.info(f"SMB_SERVER_IP: {SMB_SERVER_IP}")
 logging.info(f"SMB_USERNAME: {SMB_USERNAME}")
@@ -27,8 +27,10 @@ for dir in files:
     if (dir.filename not in ['.', '..'] and dir.isDirectory and
             not any(entry.filename == f"{dir.filename}.aria2" for entry in files)):
         logging.info(f"Download directory {dir.filename} finished.")
+        flag = False
         for f in conn.listPath(SMB_PATH, f"/{dir.filename}"):
-            if f.filename.endswith(SAVE_FILE_EXTNAME) and f.file_size >= SAVE_FILE_SIZE:
+            if (f.filename.endswith(extName) for extName in SAVE_FILE_EXTNAME) and f.file_size >= SAVE_FILE_SIZE:
+                flag = True
                 if os.path.exists(SAVE_DIRECTORY + f.filename) and os.path.getsize(
                         SAVE_DIRECTORY + f.filename) == f.file_size:
                     logging.info(f"Skip download file /{dir.filename}/{f.filename} ...")
@@ -39,6 +41,7 @@ for dir in files:
                     conn.retrieveFile(SMB_PATH, f"/{dir.filename}/{f.filename}", local_file, show_progress=True)
                 logging.info("Downloaded.")
         logging.info(f"clean directory ...{dir.filename}")
-        conn.deleteFiles(SMB_PATH, f"/{dir.filename}/*", delete_matching_folders=True)
-        conn.deleteDirectory(SMB_PATH, f"/{dir.filename}")
+        if flag:
+            conn.deleteFiles(SMB_PATH, f"/{dir.filename}/*", delete_matching_folders=True)
+            conn.deleteDirectory(SMB_PATH, f"/{dir.filename}")
 conn.close()
