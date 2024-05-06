@@ -1,7 +1,6 @@
 import base64
 import os
 import stat
-import time
 import shutil
 from Crypto.Cipher import DES
 from json import dumps
@@ -16,7 +15,6 @@ QL_CLIENT_ID = "e2qUfk_CKh8e"
 QL_CLIENT_SECRET = "iPpmtfmgaeAbmp-3MpTfIya2"
 QL_URL = "http://10.10.1.1:5700"
 QL_ENV = "test"
-INVOKE_INTERVAL = 5
 FILE = "ck.txt"
 DES_KEY = b'asd213sa'
 DES = DES.new(DES_KEY, DES.MODE_ECB)
@@ -79,19 +77,8 @@ def check():
     remote.fetch()
     remote.pull()
     file = LOCAL_PATH + "\\" + FILE
-    if not os.path.exists(file):
-        print("no found file %s", file)
-    file_size = os.path.getsize(file)
-    file_time = os.path.getmtime(file)
-    while True:
-        remote.fetch()
-        remote.pull()
-        if os.path.getsize(file) != file_size or os.path.getmtime(file) != file_time:
-            with open(file, 'r') as f:
-                update_env(f.read())
-            file_size = os.path.getsize(file)
-            file_time = os.path.getmtime(file)
-        time.sleep(INVOKE_INTERVAL)
+    with open(file, 'r') as f:
+        update_env(f.read())
 
 
 if __name__ == '__main__':
