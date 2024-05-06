@@ -91,5 +91,5 @@ def check():
 if __name__ == '__main__':
     # init()
     # check()
-    padded_text = pad("&pt_key=AAJmOONfADDogbFoRP7a9g-DUZuxPs1Us5wiV7WBHvEp3Kd_a_f2WFGt0jRjXmP8Mv5exnliCIE;pt_pin=xsi640&pt_key=AAJmOOO7ADBOoP3J2CGejue6C04Mn3MU_Wz1eOQjKfGEXxd9Un4q4AQIeIfOdsGRAcnJXzaTJdU;pt_pin=jd_DEJhwsJAhCUU&pt_key=AAJmOOQAADA0c8QH6ZmwOcCyLSRUc7WLO3YcByX6AkcL-XdhoJS0wqgOpERMjuvXc5J3vpHD39o;pt_pin=shaduoh")
+    padded_text = pad("1111")
     print(base64.b64encode(DES.encrypt(padded_text.encode('utf-8'))))
