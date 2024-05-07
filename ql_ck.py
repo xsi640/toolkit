@@ -64,7 +64,7 @@ def update_env(content):
     if rjson['code'] == 200:
         print(f"获取环境变量成功, {rjson}")
         env_id = rjson['data'][0]['id']
-        value = DES.decrypt(base64.b64decode(content)).decode("utf-8").rstrip(' ')
+        value = DES.decrypt(base64.b64decode(content)).decode("utf-8").rstrip(' ').strip('&')
         print(f'id: {env_id} name:{QL_ENV} value:{value}')
         env_data = {"id": env_id, "name": QL_ENV, "value": value}
         rjson = requests.put(f"{QL_URL}/api/envs", headers={
