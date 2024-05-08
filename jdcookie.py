@@ -1,117 +1,67 @@
-import threading
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+__author__ = "Huaisha2049"
 
-import requests
-import time
-import re
-import json
-from flask import Flask, send_file
+import asyncio
+from random import random
+from socket import timeout
+from time import sleep
+import pyperclip
+import os
+import pyppeteer
 
-def loads_jsonp(_jsonp):
-    try:
-        return json.loads(re.match(".*?({.*}).*", _jsonp, re.S).group(1))
-    except:
-        raise ValueError('Invalid Input')
+# 1. download chrome-win.zip from https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Win_x64/1181217/
+# 2. unzip it to ~/AppData/Local/pyppeteer/pyppeteer/local-chromium/1181205.( Because 1181205 is written in the code, in order not to change the original library code, so here 1181205 is used as the directory name. )
+# 3. finally, it seem like this ~/AppData/Local/pyppeteer/pyppeteer/local-chromium/1181205/chrome-win/chrome.exe
 
 
-class jdthor:
-    def qrcode(self):  # 保存二维码
-        url = "https://qr.m.jd.com/show?appid=133&size=147"
-        req = requests.get(url)
-        with open("wc.png", mode="wb") as f1:
-            f1.write(req.content)
-        # print(req.headers)
-        self.state(req.cookies.get_dict())
+def find_cookie(cookies):
+    """提取pt_key和pt_pin
+    """
+    for item in cookies.split('; '):
+        if 'pt_pin' in item:
+            pt_pin = item
+        if 'pt_key' in item:
+            pt_key = item
+    jd_cookie = pt_pin + ';' + pt_key + ';'
+    pyperclip.copy(jd_cookie)  # 拷贝JDcookie到剪切板
+    print("Cookie:", jd_cookie)
+    print("已拷贝Cookie到剪切板、直接黏贴即可。")
+    # return jd_cookie
+    os.system('pause')  # 按任意键继续
 
-    def state(self, h):  # 查看扫码情况
-        while True:
-            smdl = h.get('wlfstk_smdl')
-            codekey = h.get('QRCodeKey')
-            headers = {
-                "Referer": "https://union.jd.com/index",
-                "Cookie": f"QRCodeKey={codekey}; wlfstk_smdl={smdl}"
-            }
-            url = f'https://qr.m.jd.com/check?appid=133&token={smdl}&callback=jsonp'
-            req = requests.get(url, headers=headers)
-            data = loads_jsonp(req.text)
-            if data.get('code') == 201:
-                print('\t还没扫描呢亲~')  # 未扫描
-            elif data.get('code') == 202:
-                print('\t\t请确认登陆')  # 请再手机端确认登陆
-            elif data.get('code') == 205:
-                print('\t\t\t干嘛取消登陆了')
-                break  # 取消登陆
-            elif data.get('code') == 203:
-                print('已经过期了')
-                break
-            elif data.get('code') == 200:
-                self.get(data.get('ticket'), smdl)
-                break
-            else:
-                print(data)
-                break
-            time.sleep(1)
 
-    def get(self, ticket, smdl):  # 获取Ck
-        url = f'https://passport.jd.com/uc/qrCodeTicketValidation?t={ticket}&ReturnUrl=https://union.jd.com/index&callback=jsonp'
-        headers = {
-            "Referer": "https://union.jd.com/index",
-            "Cookie": f"wlfstk_smdl={smdl}"
-        }
-        req = requests.get(url, headers=headers)
-        ckdict = req.cookies.get_dict()
-        print(ckdict)
+async def main():
+    """使用pyppeteer库来登录京东、并获取cookie
+    """
+    browser = await pyppeteer.launch(headless=False, dumpio=True, autoClose=False,
+                           args=['--no-sandbox', '--window-size=1000,800', '--disable-infobars',
+                                 '--proxy-server=http://127.0.0.1:7898'])  # 进入有头模式
+    context = await browser.createIncognitoBrowserContext()  # 隐身模式
 
-app = Flask(__name__)
+    # 关闭默认打开的第一个标签页
+    pages = await browser.pages()
+    if pages:
+        await pages[0].close()
 
-@app.route("/")
-def display_html():
-    html_content = """
-        <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>White Background Image</title>
-        <style>
-            body {
-                background-color: white; /* Set the background color of the webpage to white */
-                margin: 0;
-                padding: 0;
-            }
-            .image-container {
-                text-align: center;
-            }
-            .image {
-                max-width: 100%;
-                height: auto;
-                margin: 20px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="image-container">
-            <img src="/image" alt="qr code" class="image">
-        </div>
-    </body>
-    </html>"""
-    return html_content
+    page = await context.newPage()  # 打开新的标签页
+    await page.setViewport({'width': 1000, 'height': 800})  # 页面大小一致
+    await page.goto('https://home.m.jd.com/myJd/home.action',
+                    {'timeout': 1000 * 60})  # 访问主页、增加超时解决Navigation Timeout Exceeded: 30000 ms exceeded报错
 
-@app.route('/image')
-def display_image():
-    return send_file("wc.png", mimetype="image/png")
+    await page.waitFor(1000)
+    elm = await page.waitForXPath('//*[@id="myHeader"]', timeout=0)  # 通过判断用户头像是否存在来确定登录状态
+    if elm:
+        cookie = await page.cookies()
+        # print(cookie)
+        # 格式化cookie
+        cookies_temp = []
+        for i in cookie:
+            cookies_temp.append('{}={}'.format(i["name"], i["value"]))
+        cookies = '; '.join(cookies_temp)
+        find_cookie(cookies)
+        # print("cookies:{}".format(await page.cookies())) 
 
-def jdcookie():
-    jd = jdthor()
-    jd.qrcode()
 
-if __name__ == '__main__':
-    thread = threading.Thread(target=jdcookie)
-    thread.start()
-    app.run()
-
-{'DeviceSeq': '3faf2392b95945f185e9ef645f0a2711',
- 'TrackID': '1wOSppxp4jU9aOQFz81_du7M4jVYhNufIQdLgJbC940p8RTHBBlhbfECCsUBl_Ftys0v5Pg7pfIh1F1c0fxrsjQ',
- 'thor': '3E40D81A0A64A53AD4A2C784C68B6A4613CB433F80A652C66865AA75173B7DA5F2D0E8BE7F63C601442D300A9E49B4D0EA063EC95063A7660DC4D69E69221862B2AD82087AE3038347A2BE0A6DC33BD66A4803A816268B56185BAE1617C706A5BCDF9D13EC489B367BDD279411A25639EFE95B73B5019F90F4E35D79030F5B51',
- 'flash': '2_5XA1cHs_D5i48ACyJ6C-mRulbW4GI1VnSCkXyW1-OPnv6vyZ01k1b26AJhKd8p0R6FKLclzWaCFWUQOejw4tWEFmNqz6UOZT1tZA-NpwHoUp2-XXnorn27_FNtTx73oU',
- 'pinId': 'wExJDvOMp4I', 'pin': 'xsi640', 'unick': 'jdxsi64123', 'ceshi3.com': '203', '_tp': 't5FlCqHStHx%2Bp0u92JCRxQ%3D%3D', 'logining': '1', '_pst': 'xsi640'}
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(main())  # 调用
