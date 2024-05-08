@@ -1,11 +1,7 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
-__author__ = "Huaisha2049"
-
 import asyncio
 import base64
-import shutil
-
 import pyperclip
 import os
 import tempfile
@@ -18,7 +14,7 @@ REPO_BRANCH = "master"
 FILE_PREFIX = "ck_"
 DES_KEY = b'asd213sa'
 DES = DES.new(DES_KEY, DES.MODE_ECB)
-temp_dir = 'f:\\temp\\ck_temp'
+temp_dir = tempfile.gettempdir() + '/ck_temp'
 
 # 1. download chrome-win.zip from https://commondatastorage.googleapis.com/chromium-browser-snapshots/index.html?prefix=Win_x64/1181217/
 # 2. unzip it to ~/AppData/Local/pyppeteer/pyppeteer/local-chromium/1181205.( Because 1181205 is written in the code, in order not to change the original library code, so here 1181205 is used as the directory name. )
@@ -71,8 +67,7 @@ def find_cookie(cookies):
 
 async def main():
     browser = await pyppeteer.launch(headless=False, dumpio=True, autoClose=False,
-                                     args=['--no-sandbox', '--window-size=1000,800', '--disable-infobars',
-                                           '--proxy-server=http://127.0.0.1:7898'])  # 进入有头模式
+                                     args=['--no-sandbox', '--window-size=1000,800', '--disable-infobars'])  # 进入有头模式
     context = await browser.createIncognitoBrowserContext()  # 隐身模式
     pages = await browser.pages()
     if pages:
