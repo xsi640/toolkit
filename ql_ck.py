@@ -43,7 +43,7 @@ def decrypt(content):
 def encrypt(content):
     while len(content) % 8 != 0:
         content += ' '
-    return base64.b64encode(DES.encrypt(content.encode('utf-8')))
+    return base64.b64encode(DES.encrypt(content.encode('utf-8'))).decode("utf-8")
 
 
 def get_token():
