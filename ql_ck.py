@@ -2,6 +2,7 @@
 # coding: utf-8
 
 import base64
+import glob
 import os
 import stat
 import shutil
@@ -16,7 +17,7 @@ REPO_URL = "git@gitee.com:xsi640/bed.git"
 REPO_BRANCH = "master"
 QL_URL = "http://127.0.0.1:5700"
 QL_ENV = "JD_COOKIE"
-FILE = "ck.txt"
+FILE = "ck_*"
 DES_KEY = b'asd213sa'
 DES = DES.new(DES_KEY, DES.MODE_ECB)
 
@@ -35,10 +36,14 @@ def init():
         os.makedirs(temp_dir)
 
 
-def pad(text):
-    while len(text) % 8 != 0:
-        text += ' '
-    return text
+def decrypt(content):
+    return DES.decrypt(base64.b64decode(content)).decode("utf-8").rstrip(' ')
+
+
+def encrypt(content):
+    while len(content) % 8 != 0:
+        content += ' '
+    return base64.b64encode(DES.encrypt(content.encode('utf-8')))
 
 
 def get_token():
@@ -51,6 +56,8 @@ def get_token():
 
 
 def update_env(content):
+    content = '&'.join(str(x) for x in content)
+    print(f"update: {content}")
     token = get_token()
     if not token:
         print(f"获取token失败")
@@ -84,12 +91,19 @@ def check():
     remote.fetch()
     remote.pull()
     file = temp_dir + '/' + FILE
-    with open(file, 'r') as f:
-        update_env(f.read())
+    content = set()
+    for file in glob.glob(file):
+        print(f"发现文件: {file}")
+        with open(file, 'r') as f:
+            s = f.read()
+            print(f"内容: {s}")
+            if len(s) > 0:
+                content.add(s)
+    if len(content) > 0:
+        update_env(content)
 
 
 if __name__ == '__main__':
-    # init()
-    # check()
-    padded_text = pad("1111")
-    print(base64.b64encode(DES.encrypt(padded_text.encode('utf-8'))))
+    init()
+    check()
+
