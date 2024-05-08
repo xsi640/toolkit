@@ -71,9 +71,8 @@ def update_env(content):
     if rjson['code'] == 200:
         print(f"获取环境变量成功, {rjson}")
         env_id = rjson['data'][0]['id']
-        value = DES.decrypt(base64.b64decode(content)).decode("utf-8").rstrip(' ').strip('&')
-        print(f'id: {env_id} name:{QL_ENV} value:{value}')
-        env_data = {"id": env_id, "name": QL_ENV, "value": value}
+        print(f'id: {env_id} name:{QL_ENV} value:{content}')
+        env_data = {"id": env_id, "name": QL_ENV, "value": content}
         rjson = requests.put(f"{QL_URL}/api/envs", headers={
             "Content-Type": "application/json",
             "authorization": f"Bearer {token}"
@@ -98,7 +97,7 @@ def check():
             s = f.read()
             print(f"内容: {s}")
             if len(s) > 0:
-                content.add(s)
+                content.add(decrypt(s))
     if len(content) > 0:
         update_env(content)
 
@@ -106,4 +105,3 @@ def check():
 if __name__ == '__main__':
     init()
     check()
-
