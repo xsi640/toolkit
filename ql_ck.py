@@ -84,6 +84,31 @@ def update_env(content):
             print(f"更新环境变量失败: {rjson['message']}")
 
 
+def check_ck(content):
+    rjson = requests.get(url='https://me-api.jd.com/user_new/info/GetJDUserInfoUnion', headers={
+        'Host': "me-api.jd.com",
+        'Accept': "*/*",
+        'Connection': "keep-alive",
+        'Cookie': content,
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36 Edg/106.0.1370.42",
+        "Accept-Language": "zh-cn",
+        "Referer": "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&",
+        "Accept-Encoding": "gzip, deflate, br"
+    }).json()
+    if rjson['retcode'] == '1001':
+        return False
+    if rjson['retcode'] == '0':
+        return True
+    rjson = requests.get(url='https://plogin.m.jd.com/cgi-bin/ml/islogin', headers={
+        "Cookie": content,
+        "referer": "https://h5.m.jd.com/",
+        "User-Agent": "jdapp;iPhone;10.1.2;15.0;network/wifi;Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1"
+    }).json()
+    if rjson['islogin'] == "1":
+        return True
+    return False
+
+
 def check():
     repo = Repo.clone_from(url=REPO_URL, to_path=temp_dir)
     remote = repo.remote()
@@ -97,10 +122,14 @@ def check():
             s = f.read()
             print(f"内容: {s}")
             if len(s) > 0:
-                content.add(decrypt(s))
+                s = decrypt(s)
+                print(f"解密后: {s}")
+                if check_ck(s) == True:
+                    content.add(s)
+                else:
+                    print(f'cookie验证失败...{file}')
     if len(content) > 0:
         update_env(content)
-
 
 if __name__ == '__main__':
     init()
