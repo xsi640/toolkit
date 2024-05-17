@@ -4,11 +4,13 @@
 import base64
 import glob
 import os
+import re
 import stat
 import shutil
 from Crypto.Cipher import DES
 import tempfile
 import json
+import sendNotify
 
 import requests
 from git import Repo
@@ -123,6 +125,7 @@ def check():
     remote.pull()
     file = temp_dir + '/' + FILE
     content = set()
+    fail_account = set()
     for file in glob.glob(file):
         print(f"发现文件: {file}")
         with open(file, 'r') as f:
@@ -135,8 +138,15 @@ def check():
                     content.add(s)
                 else:
                     print(f'cookie验证失败...{file}')
+                    fail_account.add(re.findall(r"pt_pin=([^; ]+)(?=;?)", s)[0])
+    if len(fail_account) > 0:
+        try:
+            sendNotify.send('cookie验证失败', "账号：" + ",".join(fail_account))
+        finally:
+            pass
     if len(content) > 0:
         update_env(content)
+
 
 if __name__ == '__main__':
     init()
