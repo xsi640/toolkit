@@ -71,6 +71,7 @@ def update_env(content):
     if rjson['code'] == 200:
         print(f"获取环境变量成功, {rjson}")
         env_id = rjson['data'][0]['id']
+        status = rjson['data'][0]['status']
         print(f'id: {env_id} name:{QL_ENV} value:{content}')
         env_data = {"id": env_id, "name": QL_ENV, "value": content}
         rjson = requests.put(f"{QL_URL}/api/envs", headers={
@@ -82,6 +83,12 @@ def update_env(content):
             print(f"更新环境变量成功")
         else:
             print(f"更新环境变量失败: {rjson['message']}")
+        if status == 1:
+            rjson = requests.put(f"{QL_URL}/api/envs/enable", headers={
+                "Content-Type": "application/json",
+                "authorization": f"Bearer {token}"
+            }, data=json.dumps([env_id])).json()
+            print(rjson)
 
 
 def check_ck(content):
