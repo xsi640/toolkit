@@ -4,12 +4,12 @@ logging.basicConfig(level=logging.INFO)
 console_handler = logging.StreamHandler()
 logging.getLogger().addHandler(console_handler)
 
-MID = 43447
+MID = 45074
 ORDER_WAY = 0
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNjkxMjYyODUzIiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuiLj-aJrCIsIlVzZXJJZCI6IjM0MDQ3IiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI1LzIvMjIgMTo1NzowMiIsIm5iZiI6MTcwODY1MzQyMiwiZXhwIjoxNzQwMTg5NDIyLCJpYXQiOjE3MDg2NTM0MjIsImlzcyI6Imhvbmd4aW4iLCJhdWQiOiJob25neGluIn0.CXZxLFWg0F0M3QO0KOYlsRaHDWnWmkIGSfB7_sLcp4A"
 URL = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-START_TIME = "2024-02-17 12:00:00"
+START_TIME = "2024-06-13 10:00:00"
 
 
 def sign(map: dict) -> str:
@@ -65,6 +65,10 @@ def run_tick():
             break
         time.sleep(1)
 
+def timestamp_to_date(time_stamp, format_string="%Y-%m-%d %H:%M:%S"):
+    time_array = time.localtime(time_stamp/1000)
+    other_style_time = time.strftime(format_string, time_array)
+    return other_style_time
 
 while True:
     dt = datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(minutes=1)
@@ -72,4 +76,4 @@ while True:
         logging.log(logging.INFO, "开始...")
         run_tick()
     time.sleep(60)
-    logging.log(logging.INFO, f"时间未到...{time.time()}")
+    logging.log(logging.INFO, f"时间未到...{datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S')}/{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
