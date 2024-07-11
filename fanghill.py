@@ -1,4 +1,4 @@
-import os, time, datetime, logging, hashlib, json, requests, logging
+import os, time, datetime, logging, hashlib, json, requests, logging, threading
 
 logging.basicConfig(level=logging.INFO)
 console_handler = logging.StreamHandler()
@@ -6,7 +6,10 @@ logging.getLogger().addHandler(console_handler)
 
 MID = 45354
 ORDER_WAY = 0
-TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNjkxMjYyODUzIiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuiLj-aJrCIsIlVzZXJJZCI6IjM0MDQ3IiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI1LzIvMjIgMTo1NzowMiIsIm5iZiI6MTcwODY1MzQyMiwiZXhwIjoxNzQwMTg5NDIyLCJpYXQiOjE3MDg2NTM0MjIsImlzcyI6Imhvbmd4aW4iLCJhdWQiOiJob25neGluIn0.CXZxLFWg0F0M3QO0KOYlsRaHDWnWmkIGSfB7_sLcp4A"
+TOKENS = {
+    "suyang": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNjkxMjYyODUzIiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuiLj-aJrCIsIlVzZXJJZCI6IjM0MDQ3IiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI1LzIvMjIgMTo1NzowMiIsIm5iZiI6MTcwODY1MzQyMiwiZXhwIjoxNzQwMTg5NDIyLCJpYXQiOjE3MDg2NTM0MjIsImlzcyI6Imhvbmd4aW4iLCJhdWQiOiJob25neGluIn0.CXZxLFWg0F0M3QO0KOYlsRaHDWnWmkIGSfB7_sLcp4A",
+    "wufang": ""
+}
 URL = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
 START_TIME = "2024-07-11 10:00:00"
@@ -27,7 +30,7 @@ def sign(map: dict) -> str:
     return hashlib.md5(urlParams.encode("utf-8")).hexdigest()
 
 
-def post_server() -> bool:
+def post_server(token: str) -> bool:
     timestamp = int(time.time() * 1000)
     data = {
         "Mid": MID,
@@ -36,7 +39,7 @@ def post_server() -> bool:
     newData = {
         "Mid": MID,
         "OrderWay": ORDER_WAY,
-        "token": TOKEN,
+        "token": token,
         "timestamps": timestamp
     }
     headers = {
@@ -44,7 +47,7 @@ def post_server() -> bool:
         'Sign': sign(newData),
         'Timestamps': str(timestamp),
         'User-Agent': USER_AGENT,
-        'Authorization': f"Bearer {TOKEN}"
+        'Authorization': f"Bearer {token}"
     }
     try:
         body = json.dumps(data)
@@ -59,21 +62,35 @@ def post_server() -> bool:
         return False
 
 
-def run_tick():
+def run_tick(token: str):
     while True:
-        if post_server():
+        if post_server(token):
             break
         time.sleep(1)
 
+
 def timestamp_to_date(time_stamp, format_string="%Y-%m-%d %H:%M:%S"):
-    time_array = time.localtime(time_stamp/1000)
+    time_array = time.localtime(time_stamp / 1000)
     other_style_time = time.strftime(format_string, time_array)
     return other_style_time
 
-while True:
-    dt = datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(minutes=1)
-    if datetime.datetime.now() > dt:
-        logging.log(logging.INFO, "开始...")
-        run_tick()
-    time.sleep(60)
-    logging.log(logging.INFO, f"时间未到...{datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S')}/{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+def run(token: str):
+    while True:
+        dt = datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(minutes=1)
+        if datetime.datetime.now() > dt:
+            logging.log(logging.INFO, "开始...")
+            run_tick(token)
+        time.sleep(60)
+        logging.log(logging.INFO,
+                    f"时间未到...{datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S')}/{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+
+
+threads = []
+for key, value in TOKENS.items():
+    thread = threading.Thread(target=run, name="", args=(value))
+    thread.start()
+    threads.append(thread)
+
+for t in threads:
+    t.join()
