@@ -4,12 +4,12 @@ logging.basicConfig(level=logging.INFO)
 console_handler = logging.StreamHandler()
 logging.getLogger().addHandler(console_handler)
 
-MID = 45074
+MID = 45354
 ORDER_WAY = 0
 TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNjkxMjYyODUzIiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuiLj-aJrCIsIlVzZXJJZCI6IjM0MDQ3IiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI1LzIvMjIgMTo1NzowMiIsIm5iZiI6MTcwODY1MzQyMiwiZXhwIjoxNzQwMTg5NDIyLCJpYXQiOjE3MDg2NTM0MjIsImlzcyI6Imhvbmd4aW4iLCJhdWQiOiJob25neGluIn0.CXZxLFWg0F0M3QO0KOYlsRaHDWnWmkIGSfB7_sLcp4A"
 URL = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-START_TIME = "2024-06-13 10:00:00"
+START_TIME = "2024-07-11 10:00:00"
 
 
 def sign(map: dict) -> str:
@@ -51,7 +51,7 @@ def post_server() -> bool:
         logging.log(logging.INFO, f"post {URL} {headers} {body}")
         response = requests.post(URL, headers=headers, data=body).json()
         logging.log(logging.INFO, response)
-        if response["result"] == 1 or response["result"] == 0:
+        if response["result"] == 1:
             return True
         return False
     except Exception as e:
