@@ -4,16 +4,16 @@
 import base64
 import glob
 import os
-import re
 import stat
 import shutil
 from Crypto.Cipher import DES
 import tempfile
-import json
-import sendNotify
-
 import requests
+import logging
 from git import Repo
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 REPO_URL = "git@gitee.com:xsi640/bed.git"
 REPO_BRANCH = "master"
@@ -49,6 +49,8 @@ def encrypt(content):
 
 
 def check_ck(content):
+    logger.info(f"ck: {content}")
+    logger.info("请求 GetJDUserInfoUnion")
     rjson = requests.get(url='https://me-api.jd.com/user_new/info/GetJDUserInfoUnion', headers={
         'Host': "me-api.jd.com",
         'Accept': "*/*",
@@ -59,15 +61,18 @@ def check_ck(content):
         "Referer": "https://home.m.jd.com/myJd/newhome.action?sceneval=2&ufc=&",
         "Accept-Encoding": "gzip, deflate, br"
     }).json()
+    logger.info(rjson)
     if rjson['retcode'] == '1001':
         return False
     if rjson['retcode'] == '0':
         return True
+    logger.info("请求 islogin")
     rjson = requests.get(url='https://plogin.m.jd.com/cgi-bin/ml/islogin', headers={
         "Cookie": content,
         "referer": "https://h5.m.jd.com/",
         "User-Agent": "jdapp;iPhone;10.1.2;15.0;network/wifi;Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1"
     }).json()
+    logger.info(rjson)
     if rjson['islogin'] == "1":
         return True
     return False
