@@ -1,4 +1,5 @@
 import os, time, datetime, logging, hashlib, json, requests, logging, threading
+import random
 
 logging.basicConfig(level=logging.INFO)
 console_handler = logging.StreamHandler()
@@ -62,11 +63,13 @@ def post_server(token: str) -> bool:
         return False
 
 
-def run_tick(token: str):
+def run_tick(token: str) -> bool:
     while True:
         if post_server(token):
             break
-        time.sleep(1)
+        sleep_time = random.uniform(0.1, 0.02)
+        time.sleep(sleep_time)
+    return True
 
 
 def timestamp_to_date(time_stamp, format_string="%Y-%m-%d %H:%M:%S"):
@@ -80,7 +83,8 @@ def run(name, token):
         dt = datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(minutes=1)
         if datetime.datetime.now() > dt:
             logging.log(logging.INFO, "开始..." + name)
-            run_tick(token)
+            if run_tick(token):
+                break
         time.sleep(5)
         logging.log(logging.INFO,
                     f"时间未到...{name}:{datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S')}/{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
