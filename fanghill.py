@@ -5,16 +5,16 @@ logging.basicConfig(level=logging.INFO)
 console_handler = logging.StreamHandler()
 logging.getLogger().addHandler(console_handler)
 
-MID = 45475
+MID = 45587
 ORDER_WAY = 0
 TOKENS = {
     "suyang": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNjkxMjYyODUzIiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuiLj-aJrCIsIlVzZXJJZCI6IjM0MDQ3IiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI1LzIvMjIgMTo1NzowMiIsIm5iZiI6MTcwODY1MzQyMiwiZXhwIjoxNzQwMTg5NDIyLCJpYXQiOjE3MDg2NTM0MjIsImlzcyI6Imhvbmd4aW4iLCJhdWQiOiJob25neGluIn0.CXZxLFWg0F0M3QO0KOYlsRaHDWnWmkIGSfB7_sLcp4A",
     "wufang": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjE4NzAxMTE2ODQ2IiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuWQtOiKsyIsIlVzZXJJZCI6IjUyODEyIiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI1LzcvMTggMTozNTowMSIsIm5iZiI6MTcyMTI2NjUwMSwiZXhwIjoxNzUyODAyNTAxLCJpYXQiOjE3MjEyNjY1MDEsImlzcyI6Imhvbmd4aW4iLCJhdWQiOiJob25neGluIn0.UevQttiGIIF6TE_XRxP_tR1KTlLW2A538_ACEVvrdp8",
     "yyx": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNDM5NDE1NDE5IiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuadqOiJs-mcniIsIlVzZXJJZCI6IjMzMzYxIiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI1LzgvMTUgOToxODozOCIsIm5iZiI6MTcyMzcxMzUxOCwiZXhwIjoxNzU1MjQ5NTE4LCJpYXQiOjE3MjM3MTM1MTgsImlzcyI6Imhvbmd4aW4iLCJhdWQiOiJob25neGluIn0.VRqFKLhJvZqSDUv6t8faI_Q32xGYg6M9D8YkzB95Qok"
 }
-URL = "https://tsg.fscac.org:5134/api/FW_Module/AddOrder"
+URL = "https://tsg.fscac.org:5134"
 USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36"
-START_TIME = "2024-07-24 10:00:00"
+START_TIME = "2024-08-22 10:00:00"
 
 
 def sign(map: dict) -> str:
@@ -29,7 +29,32 @@ def sign(map: dict) -> str:
             urlParams += f"{value}={map[value]}"
         else:
             urlParams += f"{value}={map[value]}&"
-    return hashlib.md5(urlParams.encode("utf-8")).hexdigest()
+    return hashlib.md5(urlParams.encode("utf-8")).hexdigest().upper()
+
+
+def check_token(token: str) -> bool:
+    timestamp = int(time.time() * 1000)
+    newData = {
+        "token": token,
+        "timestamps": timestamp
+    }
+    headers = {
+        'Content-Type': 'application/json',
+        'Sign': sign(newData),
+        'Timestamps': str(timestamp),
+        'User-Agent': USER_AGENT,
+        'Authorization': f"Bearer {token}"
+    }
+    try:
+        logging.log(logging.INFO, f"get {URL}/api/FW_RegUser/GetUserInfo {headers}")
+        response = requests.get(f"{URL}/api/FW_RegUser/GetUserInfo", headers=headers).json()
+        logging.log(logging.INFO, response)
+        if response["result"] == 1:
+            return True
+        return False
+    except Exception as e:
+        logging.log(logging.ERROR, e)
+        return False
 
 
 def post_server(token: str) -> bool:
@@ -53,10 +78,12 @@ def post_server(token: str) -> bool:
     }
     try:
         body = json.dumps(data)
-        logging.log(logging.INFO, f"post {URL} {headers} {body}")
-        response = requests.post(URL, headers=headers, data=body).json()
+        logging.log(logging.INFO, f"post {URL}/api/FW_Module/AddOrder {headers} {body}")
+        response = requests.post(f"{URL}/api/FW_Module/AddOrder", headers=headers, data=body).json()
         logging.log(logging.INFO, response)
         if response["result"] == 1:
+            return True
+        if response["result"] == 0 and "已预约" in response["msg"]:
             return True
         return False
     except Exception as e:
@@ -80,6 +107,9 @@ def timestamp_to_date(time_stamp, format_string="%Y-%m-%d %H:%M:%S"):
 
 
 def run(name, token):
+    if not check_token(token):
+        logging.info(f"{name} token 验证失败。")
+        return
     while True:
         dt = datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S') - datetime.timedelta(minutes=1)
         if datetime.datetime.now() > dt:
@@ -89,7 +119,6 @@ def run(name, token):
         time.sleep(5)
         logging.log(logging.INFO,
                     f"时间未到...{name}:{datetime.datetime.strptime(START_TIME, '%Y-%m-%d %H:%M:%S')}/{datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-
 
 threads = []
 for key, value in TOKENS.items():
