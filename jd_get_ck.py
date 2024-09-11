@@ -2,6 +2,8 @@
 # -*- coding:utf-8 -*-
 import asyncio
 import base64
+from idlelib.window import add_windows_to_menu
+
 import pyperclip
 import os
 import tempfile
@@ -72,13 +74,13 @@ async def main():
     pages = await browser.pages()
     if pages:
         await pages[0].close()
-
     page = await context.newPage()  # 打开新的标签页
     await page.setViewport({'width': 1000, 'height': 800})  # 页面大小一致
     await page.goto('https://home.m.jd.com/myJd/home.action',
                     {'timeout': 1000 * 60})  # 访问主页、增加超时解决Navigation Timeout Exceeded: 30000 ms exceeded报错
-    await page.waitFor(1000)
-    elm = await page.waitForXPath('//*[@id="myHeader"]', timeout=0)  # 通过判断用户头像是否存在来确定登录状态
+    # await page.waitForXPath('//*[@class="avatar"]', timeout=0)
+    await page.waitFor(10000)
+    elm = await page.waitForXPath('//*[@id="gotoUserInfo"]', timeout=0)  # 通过判断用户头像是否存在来确定登录状态
     if elm:
         cookie = await page.cookies()
         # print(cookie)
@@ -88,7 +90,7 @@ async def main():
             cookies_temp.append('{}={}'.format(i["name"], i["value"]))
         cookies = '; '.join(cookies_temp)
         find_cookie(cookies)
-        # print("cookies:{}".format(await page.cookies())) 
+        # print("cookies:{}".format(await page.cookies()))
 
 
 if __name__ == "__main__":
