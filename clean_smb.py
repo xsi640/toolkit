@@ -1,5 +1,7 @@
 import os
 import logging
+from time import sleep
+
 from smb.SMBConnection import SMBConnection
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -8,7 +10,7 @@ SMB_SERVER_IP = "192.168.1.1"
 SMB_USERNAME = os.environ.get("SMB_ARIA2_USERNAME")
 SMB_PASSWORD = os.environ.get("SMB_ARIA2_PASSWORD")
 SMB_PATH = "aria2"
-SAVE_DIRECTORY = "f:\\private\\"
+SAVE_DIRECTORY = "/Volumes/Storage1/private/"
 SAVE_FILE_SIZE = 100 * 1024 * 1024
 SAVE_FILE_EXTNAME = [".mp4", ".mkv"]
 
@@ -42,6 +44,7 @@ for dir in files:
                 logging.info("Downloaded.")
         logging.info(f"clean directory ...{dir.filename}")
         if flag:
+            sleep(1)
             conn.deleteFiles(SMB_PATH, f"/{dir.filename}/*", delete_matching_folders=True)
             conn.deleteDirectory(SMB_PATH, f"/{dir.filename}")
 conn.close()
