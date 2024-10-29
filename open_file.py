@@ -9,7 +9,7 @@ FILE_EXT_NAMES = ["mp4", "mkv"]
 FILE_FOLDER = [
     # "F:\\private",
     # "F:\\private\\其他",
-    "/Volumes/Storage1/private/"
+    "/Volumes/private/private/"
 ]
 CHANGE = True
 
