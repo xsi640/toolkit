@@ -11,7 +11,7 @@ from docx.shared import Pt
 TOPIC_NUM = 100
 SYMBOL = ['+', '-']
 REPEAT = False
-NUM_LIMIT = 5
+NUM_LIMIT = 10
 COLUMN_COUNT = 3
 
 
@@ -69,7 +69,7 @@ def generate_doc():
     doc = Document()
     for p in generate():
         p = doc.add_paragraph(p)
-        p.runs[0].font.size = Pt(16)
+        p.runs[0].font.size = Pt(18)
     section = doc.sections[0]
     set_section_columns(section, COLUMN_COUNT)
     now = datetime.datetime.now()
