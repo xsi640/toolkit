@@ -74,19 +74,19 @@ class TestStrategy(bt.Strategy):
             return
         # 如果没有持仓则买入
         if not self.position:
-            # 今天的收盘价在均线价格之上
-            if self.dataclose[0] > self.sma[0]:
+            # 今天的收盘价在均线价格之下
+            if self.dataclose[0] < self.sma[0]:
                 # 买入
                 self.log('买入单, %.2f' % self.dataclose[0])
                 # 跟踪订单避免重复
                 self.order = self.buy()
         else:
-            # 如果已经持仓，收盘价在均线价格之下
-            if self.dataclose[0] < self.sma[0]:
+            # 如果已经持仓，收盘价在均线价格之上
+            if self.dataclose[0] > self.sma[0]:
                 # 全部卖出
                 self.log('卖出单, %.2f' % self.dataclose[0])
                 # 跟踪订单避免重复
-                self.order = self.sell()
+                self.order = self.close()
 
 # data部分
 # 开盘价（ Open）、最高价（High）、最低价（Low）、收盘价（Close）、成交量（Volume）、持仓量（OpenInterest）
@@ -94,16 +94,25 @@ class TestStrategy(bt.Strategy):
 # 实例化 cerebro
 cerebro = bt.Cerebro()
 cerebro.addstrategy(TestStrategy)
+
+class CustomYahooFinanceData(bt.feeds.YahooFinanceData):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def _load(self):
+        while True:
+            # 加载一行数据
+            if super()._load():
+                # 筛选出特定代码的行
+                if self.data.sec_code[0] == '600466.SH':
+                    return True
+            else:
+                return False
+
 modpath = os.path.dirname(os.path.abspath(sys.argv[0]))
-datapath = os.path.join(modpath, './data/orcl-1995-2014.txt')
+datapath = os.path.join(modpath, './data/daily_price.csv')
 # 创建交易数据集
-data = bt.feeds.YahooFinanceCSVData(
-    dataname=datapath,
-    # 数据必须大于fromdate
-    fromdate=datetime.datetime(2000, 1, 1),
-    # 数据必须小于todate
-    todate=datetime.datetime(2000, 12, 31),
-    reverse=False)
+data = CustomYahooFinanceData(dataname=datapath)
 # 加载交易数据
 cerebro.adddata(data)
 
