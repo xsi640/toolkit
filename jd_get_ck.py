@@ -76,7 +76,7 @@ async def main():
         await pages[0].close()
     page = await context.newPage()  # 打开新的标签页
     await page.setViewport({'width': 1000, 'height': 800})  # 页面大小一致
-    await page.goto('https://home.m.jd.com/myJd/home.action',
+    await page.goto('https://plogin.m.jd.com/login/login?appid=100&kpkey=&returnurl=https%3A%2F%2Fhome.m.jd.com%2FmyJd%2Fhome.action',
                     {'timeout': 1000 * 60})  # 访问主页、增加超时解决Navigation Timeout Exceeded: 30000 ms exceeded报错
     # await page.waitForXPath('//*[@class="avatar"]', timeout=0)
     await page.waitFor(10000)
