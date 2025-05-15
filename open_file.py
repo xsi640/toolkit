@@ -8,7 +8,7 @@ from typing_extensions import runtime
 FILE_EXT_NAMES = ["mp4", "mkv"]
 FILE_FOLDER = [
     # "F:\\private",
-    # "F:\\private\\其他",
+    # "/Volumes/private/private/其他",
     "/Volumes/private/private/"
 ]
 CHANGE = True

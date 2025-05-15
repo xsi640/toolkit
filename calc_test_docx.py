@@ -8,12 +8,12 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Pt
 
-TOPIC_NUM = 100
+PAGE_NUM = 10
+TOPIC_NUM = 57
 SYMBOL = ['+', '-']
 REPEAT = False
-NUM_LIMIT = 10
+NUM_LIMIT = 100
 COLUMN_COUNT = 3
-
 
 def calc(x, y, symbol):
     if symbol == '+':
@@ -67,9 +67,10 @@ def set_section_columns(section, num_cols):
 
 def generate_doc():
     doc = Document()
-    for p in generate():
-        p = doc.add_paragraph(p)
-        p.runs[0].font.size = Pt(18)
+    for i in range(0, PAGE_NUM):
+        for p in generate():
+            p = doc.add_paragraph(p)
+            p.runs[0].font.size = Pt(18)
     section = doc.sections[0]
     set_section_columns(section, COLUMN_COUNT)
     now = datetime.datetime.now()
