@@ -6,10 +6,10 @@ from smb.SMBConnection import SMBConnection
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-SMB_SERVER_IP = "192.168.1.1"
+SMB_SERVER_IP = "192.168.1.2"
 SMB_USERNAME = os.environ.get("SMB_ARIA2_USERNAME")
 SMB_PASSWORD = os.environ.get("SMB_ARIA2_PASSWORD")
-SMB_PATH = "aria2"
+SMB_PATH = "downloads"
 SAVE_DIRECTORY = "/Volumes/private/private/"
 SAVE_FILE_SIZE = 100 * 1024 * 1024
 SAVE_FILE_EXTNAME = [".mp4", ".mkv"]
@@ -28,7 +28,7 @@ files = conn.listPath(SMB_PATH, '/')
 for dir in files:
     if (dir.filename not in ['.', '..'] and dir.isDirectory and
             not any(entry.filename == f"{dir.filename}.aria2" for entry in files)):
-        logging.info(f"Download directory {dir.filename} finished.") 
+        logging.info(f"Download directory {dir.filename} finished.")
         flag = False
         for f in conn.listPath(SMB_PATH, f"/{dir.filename}"):
             if (f.filename.endswith(extName) for extName in SAVE_FILE_EXTNAME) and f.file_size >= SAVE_FILE_SIZE:
