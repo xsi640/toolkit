@@ -147,15 +147,30 @@ def take_seat(rid, token):
 data = {
     "Mid": 46616,
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6IjEzNjkxMjYyODUzIiwiUm9sZUlkcyI6IiIsInJvbGUiOiIiLCJSZWFsTmFtZSI6IuiLj-aJrCIsIlVzZXJJZCI6IjM0MDQ3IiwiRGVwdElkIjoiMCIsIkRlcHRDb2RlIjoiIiwiRGVwdE5hbWUiOiIiLCJodHRwOi8vc2NoZW1hcy5taWNyb3NvZnQuY29tL3dzLzIwMDgvMDYvaWRlbnRpdHkvY2xhaW1zL2V4cGlyYXRpb24iOiIyMDI2LzIvNyA2OjIwOjE2IiwibmJmIjoxNzM4OTA5MjE2LCJleHAiOjE3NzA0NDUyMTYsImlhdCI6MTczODkwOTIxNiwiaXNzIjoiaG9uZ3hpbiIsImF1ZCI6Imhvbmd4aW4ifQ.4kvNF5xMd4tL8SXIa4cCc7Cs-LFE2Pb1yc3QTUtac8Y",
-    "timestamps": 1742525854547,
-    "SeatId": 488
-    # "list":[{"Mid":46616,"SeatId":488}]
+    "timestamps": 1742525854547
 }
 
-# {"Mid":46616,"list":[{"Mid":46616,"SeatId":488}]}
 
-print("A80927A4F2AAA797948F41E3A4137AC3")
-print(sign(data))
+# list = get_seats(TOKENS["suyang"])
+# print(list)
+
+# sign: 5ED58EF7F253A77603DFD0F9CA9E558A
+# timestamps: 1745999148703
+# {"Mid":46798,"list":[{"Mid":46798,"SeatId":210}]}
+
+newData = {
+    "Mid": 46798,
+    "token": TOKENS["suyang"],
+    "timestamps": 1745999148703,
+    # "SeatId": 210
+}
+
+print(sign(newData))
+print("5ED58EF7F253A77603DFD0F9CA9E558A")
+
+
+# print("A80927A4F2AAA797948F41E3A4137AC3")
+# print(sign(data))
 
 # def run(name, token):
 #     if not check_token(token):

@@ -8,10 +8,10 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Pt
 
-TOPIC_NUM = 100
+TOPIC_NUM = 1000
 SYMBOL = ['+', '-']
 REPEAT = False
-NUM_LIMIT = 10
+NUM_LIMIT = 100
 COLUMN_COUNT = 3
 
 
