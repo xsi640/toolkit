@@ -10,7 +10,7 @@ SMB_SERVER_IP = "192.168.1.2"
 SMB_USERNAME = os.environ.get("SMB_ARIA2_USERNAME")
 SMB_PASSWORD = os.environ.get("SMB_ARIA2_PASSWORD")
 SMB_PATH = "downloads"
-SAVE_DIRECTORY = "/Volumes/private/private/"
+SAVE_DIRECTORY = "G:\\private\\"
 SAVE_FILE_SIZE = 100 * 1024 * 1024
 SAVE_FILE_EXTNAME = [".mp4", ".mkv"]
 
