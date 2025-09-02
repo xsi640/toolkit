@@ -70,6 +70,8 @@ fun copy(smbFile: SmbFile, cifsContext: CIFSContext) {
         println("file exists. skip.")
         return
     }
+    var current = 0L
+    val total = smbFile.length()
     SmbFileInputStream(smbFile).use { smbInputStream ->
         FileOutputStream(saveFile).use { fileOutputStream ->
             val buffer = ByteArray(1024000)
@@ -77,9 +79,11 @@ fun copy(smbFile: SmbFile, cifsContext: CIFSContext) {
 
             while (smbInputStream.read(buffer).also { bytesRead = it } != -1) {
                 fileOutputStream.write(buffer, 0, bytesRead)
+                current += bytesRead
+                print("\rcopied file $current/$total...")
             }
             fileOutputStream.flush()
         }
     }
-    println("finished.")
+    println("\nfinished....${saveFile.name}")
 }

@@ -20,9 +20,9 @@ allprojects {
 
 
     val vers = mapOf(
-        "commons_io" to "2.13.0",
+        "commons_io" to "2.14.0",
         "commons_codec" to "1.16.0",
-        "commons_lang" to "3.12.0",
+        "commons_lang" to "3.18.0",
         "jackson" to "2.13.5",
         "okhttp" to "4.10.0",
         "jcifs" to "2.1.37"
