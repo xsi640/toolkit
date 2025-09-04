@@ -3,22 +3,22 @@ import random
 import subprocess
 import platform
 
-from typing_extensions import runtime
-
 FILE_EXT_NAMES = ["mp4", "mkv"]
 FILE_FOLDER = [
     # "F:\\private",
     # "/Volumes/private/private/其他",
-    "/Volumes/private/private/"
+    "G:\\private\\av\\"
 ]
 CHANGE = True
 
 files = []
 
 for folder in FILE_FOLDER:
-    for f in [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]:
-        if f.split(".")[-1] in FILE_EXT_NAMES and not f.startswith(".") and not f.startswith("."):
-            files.append(folder + "/" + f)
+    for root, dirs, fs in os.walk(folder):
+        for f in fs:
+            if f.split(".")[-1] in FILE_EXT_NAMES and not f.startswith(".") and not f.startswith("."):
+                full_path = os.path.join(root, f)
+                files.append(full_path)
 
 print(f"files count: {len(files)}")
 while True:
